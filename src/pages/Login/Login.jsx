@@ -1,24 +1,44 @@
+import { useState } from "react";
 import { useForm } from "react-hook-form";
-import api from "../../api/axios";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+
+const DEMO_USER = {
+  deptCode: "FIN",
+  password: "123456",
+};
+
 function Login() {
+  const { login } = useAuth();
+  const navigate = useNavigate();
+
+  const [loginError, setLoginError] = useState("");
+
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm();
 
-  const onSubmit = async (data) => {
-  try {
-    const response = await api.post(
-      "/auth/login",
-      data
-    );
+  const onSubmit = (data) => {
+    if (
+      data.deptCode === DEMO_USER.deptCode &&
+      data.password === DEMO_USER.password
+    ) {
+      // Clear any previous error
+      setLoginError("");
 
-    console.log(response.data);
-  } catch (error) {
-    console.error(error);
-  }
-};
+      // Store fake JWT
+      login("fake-jwt-token");
+
+      // Redirect to dashboard
+      navigate("/dashboard");
+    } else {
+      setLoginError(
+        "Department code or password is incorrect"
+      );
+    }
+  };
 
   return (
     <div className="login-container">
@@ -54,6 +74,18 @@ function Login() {
             <p>{errors.password.message}</p>
           )}
         </div>
+
+        {/* Login Error Message */}
+        {loginError && (
+          <p
+            style={{
+              color: "red",
+              marginTop: "10px",
+            }}
+          >
+            {loginError}
+          </p>
+        )}
 
         <button type="submit">
           Login
